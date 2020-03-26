@@ -8,11 +8,12 @@ import os, re, datetime
 
 data_path_infected = os.path.abspath("data/time_series_covid19_confirmed_global.csv")
 data_path_deaths = os.path.abspath("data/time_series_covid19_deaths_global.csv")
-data_path_recovered = os.path.abspath("data/time_series_2019-ncov-Recovered.csv")
 restriction_dates = {
 	"Hubei": datetime.date(2020, 1, 30),
 	"Italy": datetime.date(2020, 3, 12),
 	"France": datetime.date(2020, 3, 17),
+	"Germany": datetime.date(2020, 3, 22),
+	"UK": datetime.date(2020, 3, 24),
 }
 ref_date = datetime.date(2020, 1, 22)
 colors = {
@@ -28,7 +29,6 @@ colors = {
 #read the data
 data_infected = pd.read_csv(data_path_infected, header=0, sep=",").drop(["Lat", "Long"], axis=1)
 data_deaths = pd.read_csv(data_path_deaths, header=0, sep=",").drop(["Lat", "Long"], axis=1)
-data_recovered = pd.read_csv(data_path_recovered, header=0, sep=",").drop(["Lat", "Long"], axis=1)
 
 #convert dates to day differences
 date_format = "(?P<month>[0-9]*)/(?P<day>[0-9]*)/(?P<year>[0-9]*)"
@@ -48,7 +48,6 @@ for datestr in data_infected:
 #preprocess / clear data
 data_infected=data_infected.rename(columns=date_mapping)
 data_deaths=data_deaths.rename(columns=date_mapping)
-data_recovered=data_recovered.rename(columns=date_mapping)
 
 data_infected_byCountry = {}
 data_deaths_byCountry = {}
