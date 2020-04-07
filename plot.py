@@ -8,6 +8,7 @@ import os, re, datetime
 
 data_path_infected = os.path.abspath("data/time_series_covid19_confirmed_global.csv")
 data_path_deaths = os.path.abspath("data/time_series_covid19_deaths_global.csv")
+data_path_recovered = os.path.abspath("data/time_series_covid19_recovered_global.csv")
 restriction_dates = {
 	"Hubei": datetime.date(2020, 1, 30),
 	"Italy": datetime.date(2020, 3, 12),
@@ -29,6 +30,7 @@ colors = {
 #read the data
 data_infected = pd.read_csv(data_path_infected, header=0, sep=",").drop(["Lat", "Long"], axis=1)
 data_deaths = pd.read_csv(data_path_deaths, header=0, sep=",").drop(["Lat", "Long"], axis=1)
+data_recovered = pd.read_csv(data_path_recovered, header=0, sep=",").drop(["Lat", "Long"], axis=1)
 
 #convert dates to day differences
 date_format = "(?P<month>[0-9]*)/(?P<day>[0-9]*)/(?P<year>[0-9]*)"
@@ -48,10 +50,12 @@ for datestr in data_infected:
 #preprocess / clear data
 data_infected=data_infected.rename(columns=date_mapping)
 data_deaths=data_deaths.rename(columns=date_mapping)
+data_recovered=data_recovered.rename(columns=date_mapping)
 
 data_infected_byCountry = {}
 data_deaths_byCountry = {}
-for d, m in [(data_infected, data_infected_byCountry), (data_deaths, data_deaths_byCountry)]:
+data_recovered_byCountry = {}
+for d, m in [(data_infected, data_infected_byCountry), (data_deaths, data_deaths_byCountry), (data_recovered, data_recovered_byCountry)]:
 	m["Germany"] = d[(d["Country/Region"]=="Germany")]
 	m["Italy"] = d[(d["Country/Region"]=="Italy")]
 	m["France"] = d[(d["Country/Region"]=="France") & (d["Province/State"].isnull())]
@@ -62,6 +66,7 @@ for d, m in [(data_infected, data_infected_byCountry), (data_deaths, data_deaths
 for country in data_infected_byCountry:
 	data_infected_byCountry[country] = data_infected_byCountry[country].drop(["Province/State", "Country/Region"], axis=1)
 	data_deaths_byCountry[country] = data_deaths_byCountry[country].drop(["Province/State", "Country/Region"], axis=1)
+	data_recovered_byCountry[country] = data_recovered_byCountry[country].drop(["Province/State", "Country/Region"], axis=1)
 	
 
 #compute restriction dates:
@@ -83,6 +88,7 @@ for max_day in all_days:
 		days = []
 		infected = []
 		deaths = []
+		recovered = []
 		for day in data_infected_byCountry[country]:
 			if day>max_day:
 				continue
@@ -90,6 +96,7 @@ for max_day in all_days:
 			try:
 				infected.append(np.array(data_infected_byCountry[country][day])[0])
 				deaths.append(np.array(data_deaths_byCountry[country][day])[0])
+				recovered.append(np.array(data_recovered_byCountry[country][day])[0])
 			except:
 				import pdb
 				pdb.set_trace()
@@ -98,8 +105,10 @@ for max_day in all_days:
 		N_infected = max(infected)
 		infected = 100.*np.array(infected)/N_infected
 		deaths = 100.*np.array(deaths)/N_infected
+		recovered = 100.*np.array(recovered)/N_infected
 		plt.plot(days, infected, color=colors[country], linewidth=2, linestyle="solid")
 		plt.plot(days, deaths, color=colors[country], linewidth=2, linestyle="dashed")
+		plt.plot(days, recovered, color=colors[country], linewidth=2, linestyle="dotted")
 		plt.text((drawindex%3)*0.33*max_day, 108-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
 		updated_date = ref_date+datetime.timedelta(days=max(days))
 		updated_date.strftime("%d/%m/%Y")
@@ -116,7 +125,7 @@ for max_day in all_days:
 	plt.text(max_day*1.06, 105., "https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases", rotation=90, family="monospace", fontsize=10, color="black")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="solid", label="infected")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="dashed", label="dead")
-	#plt.plot(days, np.zeros(len(days)), color="black", linestyle="dotted", label="recovered")
+	plt.plot(days, np.zeros(len(days)), color="black", linestyle="dotted", label="recovered")
 	plt.legend(loc="upper left")
 
 	plt.xlim(0., max_day)
