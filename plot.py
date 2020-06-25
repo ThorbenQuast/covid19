@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pylab as plt
+from matplotlib.pyplot import figure
+figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
 
 import os, re, datetime
 
@@ -106,10 +108,11 @@ for max_day in all_days:
 		infected = 100.*np.array(infected)/N_infected
 		deaths = 100.*np.array(deaths)/N_infected
 		recovered = 100.*np.array(recovered)/N_infected
+
 		plt.plot(days, infected, color=colors[country], linewidth=2, linestyle="solid")
 		plt.plot(days, deaths, color=colors[country], linewidth=2, linestyle="dashed")
 		plt.plot(days, recovered, color=colors[country], linewidth=2, linestyle="dotted")
-		plt.text((drawindex%3)*0.33*max_day, 108-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
+		plt.text((drawindex%3)*0.33*max_day, 115-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
 		updated_date = ref_date+datetime.timedelta(days=max(days))
 		updated_date.strftime("%d/%m/%Y")
 		plt.text(-max_day*0.05, -10, updated_date)
@@ -122,7 +125,7 @@ for max_day in all_days:
 			plt.axvline(restriction_dates[country]+0.1, ymin=-0., ymax=0.05, color=colors[country], linewidth=1, linestyle="solid")
 
 	plt.text(max_day*1.03, 40., "Source:", rotation=90, family="monospace", fontsize=10, color="black")
-	plt.text(max_day*1.06, 105., "https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases", rotation=90, family="monospace", fontsize=10, color="black")
+	plt.text(max_day*1.06, 0., "https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases", rotation=90, family="monospace", fontsize=10, color="black")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="solid", label="infected")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="dashed", label="dead")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="dotted", label="recovered")
@@ -133,13 +136,14 @@ for max_day in all_days:
 	plt.ylabel("Fraction of total infected in country/region [x100]")
 	plt_path = os.path.abspath("day%i.png"%max_day)
 	plot_list.append(plt_path)
-	print "Saving",plt_path
+	print("Saving",plt_path)
 	plt.savefig(plt_path)
 	plt.clf()
 
 
+
 import imageio
-print "Transforming to video"
+print("Transforming to video")
 with imageio.get_writer('covid19_spread.mp4', fps=4) as writer:
     for im in plot_list:
         writer.append_data(imageio.imread(im))
