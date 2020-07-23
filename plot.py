@@ -85,6 +85,11 @@ for day in data_infected_byCountry["Hubei"]:
 #to make video out of it
 plot_list = []
 for max_day in all_days:
+	plt_path = os.path.abspath("day%i.png"%max_day)
+	if os.path.exists(plt_path):
+		plot_list.append(plt_path)
+		continue
+
 	#draw graphics
 	for drawindex, country in enumerate(["Hubei", "Italy", "Germany",  "France", "UK", "USA"]):
 		days = []
@@ -134,7 +139,6 @@ for max_day in all_days:
 	plt.xlim(0., max_day)
 	plt.xlabel("#Days after 22 Jan 2020")
 	plt.ylabel("Fraction of total infected in country/region [x100]")
-	plt_path = os.path.abspath("day%i.png"%max_day)
 	plot_list.append(plt_path)
 	print("Saving",plt_path)
 	plt.savefig(plt_path)
