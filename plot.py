@@ -12,22 +12,22 @@ data_path_infected = os.path.abspath("data/time_series_covid19_confirmed_global.
 data_path_deaths = os.path.abspath("data/time_series_covid19_deaths_global.csv")
 data_path_recovered = os.path.abspath("data/time_series_covid19_recovered_global.csv")
 restriction_dates = {
-	"Hubei": datetime.date(2020, 1, 30),
+	"Switzerland": datetime.date(2020, 1, 30),
 	"Italy": datetime.date(2020, 3, 12),
 	"France": datetime.date(2020, 3, 17),
 	"Germany": datetime.date(2020, 3, 22),
 	"UK": datetime.date(2020, 3, 24),
 }
-ref_date = datetime.date(2020, 1, 22)
+DAYOFFSET = 31
+ref_date = datetime.date(2020, 1, 22)+datetime.timedelta(days=DAYOFFSET)
 colors = {
 	"Germany": "black",
-	"Hubei": "grey",
+	"Switzerland": "grey",
 	"Italy": "seagreen",
 	"France": "mediumblue",
 	"UK": "red",
 	"USA": "sandybrown"
 }
-
 
 #read the data
 data_infected = pd.read_csv(data_path_infected, header=0, sep=",").drop(["Lat", "Long"], axis=1)
@@ -63,7 +63,7 @@ for d, m in [(data_infected, data_infected_byCountry), (data_deaths, data_deaths
 	m["France"] = d[(d["Country/Region"]=="France") & (d["Province/State"].isnull())]
 	m["UK"] = d[(d["Country/Region"]=="United Kingdom") & (d["Province/State"].isnull())]
 	m["USA"] = d[(d["Country/Region"]=="US")]
-	m["Hubei"] = d[(d["Country/Region"]=="China") & (d["Province/State"]=="Hubei")]
+	m["Switzerland"] = d[(d["Country/Region"]=="Switzerland")]
 
 for country in data_infected_byCountry:
 	data_infected_byCountry[country] = data_infected_byCountry[country].drop(["Province/State", "Country/Region"], axis=1)
@@ -77,8 +77,8 @@ for country in restriction_dates:
 
 #get all dates
 all_days = []
-for day in data_infected_byCountry["Hubei"]:
-	if day<5:
+for day in data_infected_byCountry["Switzerland"]:
+	if day<DAYOFFSET:
 		continue
 	all_days.append(day)
 
@@ -91,7 +91,7 @@ for max_day in all_days:
 		continue
 
 	#draw graphics
-	for drawindex, country in enumerate(["Hubei", "Italy", "Germany",  "France", "UK", "USA"]):
+	for drawindex, country in enumerate(["Switzerland", "Italy", "Germany",  "France", "UK", "USA"]):
 		days = []
 		infected = []
 		deaths = []
@@ -99,7 +99,7 @@ for max_day in all_days:
 		for day in data_infected_byCountry[country]:
 			if day>max_day:
 				continue
-			days.append(day)
+			days.append(day-DAYOFFSET)
 			try:
 				infected.append(np.array(data_infected_byCountry[country][day])[0])
 				deaths.append(np.array(data_deaths_byCountry[country][day])[0])
@@ -117,10 +117,10 @@ for max_day in all_days:
 		plt.plot(days, infected, color=colors[country], linewidth=2, linestyle="solid")
 		plt.plot(days, deaths, color=colors[country], linewidth=2, linestyle="dashed")
 		plt.plot(days, recovered, color=colors[country], linewidth=2, linestyle="dotted")
-		plt.text((drawindex%3)*0.33*max_day, 115-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
+		plt.text((drawindex%3)*0.33*(max_day-DAYOFFSET+1), 115-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
 		updated_date = ref_date+datetime.timedelta(days=max(days))
 		updated_date.strftime("%d/%m/%Y")
-		plt.text(-max_day*0.05, -10, updated_date)
+		plt.text(0, -10, updated_date)
 
 	#plot travel restriction / shutdown lines
 	for country in restriction_dates:
@@ -129,15 +129,15 @@ for max_day in all_days:
 			plt.axvline(restriction_dates[country], ymin=-0., ymax=0.05, color=colors[country], linewidth=1, linestyle="solid")
 			plt.axvline(restriction_dates[country]+0.1, ymin=-0., ymax=0.05, color=colors[country], linewidth=1, linestyle="solid")
 
-	plt.text(max_day*1.03, 40., "Source:", rotation=90, family="monospace", fontsize=10, color="black")
-	plt.text(max_day*1.06, 0., "https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases", rotation=90, family="monospace", fontsize=10, color="black")
+	plt.text((max_day-DAYOFFSET+1)*1.03, 40., "Source:", rotation=90, family="monospace", fontsize=10, color="black")
+	plt.text((max_day-DAYOFFSET+1)*1.06, 0., "https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases", rotation=90, family="monospace", fontsize=10, color="black")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="solid", label="infected")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="dashed", label="dead")
 	plt.plot(days, np.zeros(len(days)), color="black", linestyle="dotted", label="recovered")
 	plt.legend(loc="upper left")
 
-	plt.xlim(0., max_day)
-	plt.xlabel("#Days after 22 Jan 2020")
+	plt.xlim(0., max_day-DAYOFFSET+1)
+	plt.xlabel("#Days after 22 Feb 2020")
 	plt.ylabel("Fraction of total infected in country/region [x100]")
 	plot_list.append(plt_path)
 	print("Saving",plt_path)
