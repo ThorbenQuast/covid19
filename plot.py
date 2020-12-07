@@ -125,7 +125,7 @@ for max_day in all_days:
 		#plt.plot(days, infected, color=colors[country], linewidth=2, linestyle="solid")
 		plt.plot(days, deaths, color=colors[country], linewidth=3, linestyle="solid", label="%s: %.1f" % (country, max(deaths)))
 		#plt.plot(days, recovered, color=colors[country], linewidth=2, linestyle="dotted")
-		plt.text((drawindex%3)*0.33*(max_day-DAYOFFSET+1), 115-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
+		#plt.text((drawindex%3)*0.33*(max_day-DAYOFFSET+1), 115-5.*(drawindex/3), "%s, %i infected"%(country, N_infected), color=colors[country], family="monospace", fontsize=10)
 		updated_date = ref_date+datetime.timedelta(days=DAYOFFSET)+datetime.timedelta(days=max(days))
 		updated_date.strftime("%d/%m/%Y")
 		plt.text(0, -10, "Last update: "+str(updated_date), fontsize=14)
